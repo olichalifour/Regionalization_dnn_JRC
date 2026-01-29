@@ -1,0 +1,15 @@
+Parameter,Min,Max
+CalChanMan1,0.5,2
+CalChanMan2,0.5,5
+GwLoss,0,1
+GwPercValue,0.01,1
+LZTC,40,1000
+LZthreshold,0,30
+LakeMultiplier,0.5,2
+PowerPrefFlow,0.5,8
+QSplitMult,0,20
+ReservoirRnormqMult,0.25,2
+SnowMeltCoef,2.5,6.5
+UZTC,0.01,40
+adjustNormalFlood,0.01,0.99
+b_Xinanjiang,0.01,5
