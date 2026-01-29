@@ -1,0 +1,83 @@
+experiment_name: "kge_random_forest_glofas5"
+
+verbose: True
+
+model:
+  type: "RF"
+  multioutput: False
+  n_estimators: 300
+  min_samples_leaf: 5
+  max_features: "sqrt"
+  max_depth: 30
+  random_state: 42
+
+randomness:
+  enabled: False          # turn randomness on/off
+  seed: 42                 # base seed for reproducibility
+  strategy: gaussian       # 'gaussian' or 'uniform'
+  perturbation: relative  # 'relative' (value * scale) or 'absolute' (fixed std) or 'multiplicative'
+  scale: 0.10              # default scale (3% for 'relative', or absolute std for 'absolute')
+#  per_feature_scale:       # optional per-feature override (feature names must be in list_var)
+#    None
+  features: null           # list of features to perturb (null -> all numeric features in list_var)
+  clip: true               # clip perturbed values
+  clip_min_map: {}         # optional per-feature min clipping
+  clip_max_map: {}         # optional per-feature max clipping
+  categorical_strategy: none  # 'none' or 'sample' (sample from column unique values)
+  dropout_prob: 0.0        # optional: probability to zero-out (or set to mean) a numeric feature per realization
+
+training:
+  batch_size: null
+  epochs: null
+  learning_rate: null
+  optimizer: null
+  weight_decay: null
+
+
+data:
+  input_files_inflows:
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_dep_FULL/climate_indices.csv"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_dep_FULL/attributes_static_maps.csv"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_dep_FULL/attributes_inflow.csv"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_dep_FULL/attributes_coordinates.csv"
+  input_files_heads:
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_FULL/climate_indices.csv"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_FULL/attributes_static_maps.csv"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/output_dataset_FULL/attributes_coordinates.csv"
+  output_file: ""
+  id_list_train:
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/dataset_split/catchments_for_extraction_DL_dep_train.txt"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/dataset_split/catchments_for_extraction_DL_head_train.txt"
+  id_list_val:
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/dataset_split/catchments_for_extraction_DL_dep_val.txt"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/dataset_split/catchments_for_extraction_DL_head_val.txt"
+  id_list_test:
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/dataset_split/catchments_for_extraction_DL_dep_test.txt"
+    - "/eos/jeodpp/data/projects/FLOODS-RIVER/LisfloodFP/GloFASv5_dataset/dataset_split/catchments_for_extraction_DL_head_test.txt"
+  augment_with_paramhist: True
+  remove_high_equifinality: False
+  equifinality_threshold: 0.5
+  use_pca_targets: False
+  split_before_augmentation: True
+  param_hist_dir: "/home/chaliol/Documents/catch_param_history/"
+  n_realizations: 999
+  val_n_realizations: 999
+  val_split: 0.2
+  shuffle: true
+  plot_corr: false
+
+evaluation:
+  metrics: ["mse","mae", "r2", "pearson"]
+  save_predictions: true
+
+logging:
+  base_dir: "/home/chaliol/Documents/AI_exp"   # root folder for all experiments
+  plot_training:
+    enabled: false
+    folder: "plots"
+    file_name: "training_plot.png"
+  diagnostics:
+    enabled: true
+  checkpoints:
+    folder: "checkpoints"
+    save_every: 5

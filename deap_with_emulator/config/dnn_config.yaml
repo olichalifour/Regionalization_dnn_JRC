@@ -1,0 +1,24 @@
+
+experiment_name: "kge_dnn_baseline"
+
+verbose: True
+
+model:
+  type: "DNN"
+  per_output: False
+  hidden_layers: [128,64,32,16,8]
+  activation: "leaky_relu"
+  dropout: 0.2
+  loss:
+    alpha: 1.0   # weighted mse by kge and value
+    beta: 0.5 # variance part of the loss
+    gamma: 0.5   # correlation part of the loss
+    eps: 1.0E-6
+
+training:
+  batch_size: 32
+  epochs: 20
+  learning_rate: 0.00001
+  optimizer: "adam"
+  weight_decay: 1.0E-5
+

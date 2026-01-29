@@ -1,0 +1,61 @@
+#!/bin/sh 
+#$ -S /bin/sh
+#PBS -q long
+#PBS -l walltime=120:0:0
+#PBS -l nodes=1:ppn=1
+#PBS -N geoclim
+
+# ---------------- PATHS ----------------
+BASE_DIR="/home/chaliol/Lisflood_param_test_glofas5"
+WORK_DIR="/home/chaliol/lisflood_batch_run"
+BATCH_SIZE=25
+QUEUE="medium"
+WORKER_SCRIPT="/home/chaliol/run_lisflood_batch.pbs"
+JOBNAME="lisflood_batch"
+
+mkdir -p "$WORK_DIR"
+cd "$WORK_DIR"
+
+echo "Controller job started on $(hostname)"
+echo "------------------------------------"
+
+# ---------------- DISCOVER CATCHMENTS ----------------
+mapfile -t CATCHMENTS < <(ls -d "$BASE_DIR"/*/ | xargs -n1 basename)
+TOTAL=${#CATCHMENTS[@]}
+
+echo "Found $TOTAL catchments"
+
+START=0
+
+# ---------------- MAIN LOOP ----------------
+while [ $START -lt $TOTAL ]; do
+
+    RUNNING=$(qstat | grep "$JOBNAME" | wc -l || true)
+    echo "[Controller] Running batch jobs: $RUNNING"
+
+    if [ "$RUNNING" -lt 1 ]; then
+
+        STOP=$((START + BATCH_SIZE))
+        [ $STOP -gt $TOTAL ] && STOP=$TOTAL
+
+        echo "[Controller] Submitting batch $START ? $STOP"
+
+        printf "%s\n" "${CATCHMENTS[@]:$START:$((STOP-START))}" \
+            > "$WORK_DIR/catchment_list.txt"
+
+        echo "$START" > startfrom.txt
+        echo "$STOP"  > stopat.txt
+
+        qsub -q "$QUEUE" \
+             -N "$JOBNAME" \
+             "$WORKER_SCRIPT"
+
+        START=$STOP
+        sleep 10
+    else
+        echo "[Controller] Max jobs running, waiting..."
+        sleep 60
+    fi
+done
+
+echo "Controller finished submitting all batches."

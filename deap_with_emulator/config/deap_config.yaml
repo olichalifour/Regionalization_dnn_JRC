@@ -1,0 +1,12 @@
+deap:
+  population_size: 20
+  n_generations: 10
+  crossover_prob: 0.7
+  mutation_prob: 0.2
+  tournament_size: 3
+  verbose: True
+  n_jobs: 4   # number of parallel workers
+
+  bounds:
+    input_min: 0.0
+    input_max: 1.0

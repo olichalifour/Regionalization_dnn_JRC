@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# ---------------- ENV ----------------
+source /home/chaliol/miniforge3/bin/activate
+conda activate lisflood
+
+export NUMBA_THREADING_LAYER=tbb
+export NUMBA_NUM_THREADS=1
+export NUMBA_CACHE_DIR="/local0/chaliol/numba_cache_${PBS_JOBID}"
+
+mkdir -p "$NUMBA_CACHE_DIR"
+
+BASE_DIR="/home/chaliol/Lisflood_param_test_glofas5"
+WORK_DIR="/home/chaliol/lisflood_batch_run"
+CATCHMENT_FILE="$WORK_DIR/catchment_list.txt"
+
+echo "Worker job started on $(hostname)"
+echo "------------------------------------"
+
+# ---------------- FUNCTION ----------------
+run_catchment () {
+    CID="$1"
+    CDIR="$BASE_DIR/$CID"
+    SDIR="$CDIR/settings"
+
+    echo ""
+    echo ">>> [$CID] START"
+
+    PRERUN=$(ls "$SDIR"/*PreRun*.xml 2>/dev/null || true)
+    RUN=$(ls "$SDIR"/*Run*.xml 2>/dev/null || true)
+
+    if [ ! -f "$PRERUN" ] || [ ! -f "$RUN" ]; then
+        echo "!!! [$CID] Missing XML files"
+        return
+    fi
+
+    echo "[$CID] PreRun"
+    python /home/chaliol/lisflood-code/src/lisf1.py "$PRERUN"
+
+    echo "[$CID] Run"
+    python /home/chaliol/lisflood-code/src/lisf1.py "$RUN"
+
+    echo "<<< [$CID] DONE"
+}
+
+export -f run_catchment
+export BASE_DIR
+
+# ---------------- PARALLEL ----------------
+cat "$CATCHMENT_FILE" | parallel -j 25 run_catchment {}
+
+rm -rf "$NUMBA_CACHE_DIR"
+echo "Worker job finished."
